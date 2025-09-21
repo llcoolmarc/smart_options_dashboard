@@ -1,0 +1,163 @@
+{
+  "trades": [
+    {
+      "id": "8e12e855",
+      "opened": "2025-07-19 14:21:23",
+      "symbol": "SPY",
+      "strategy_type": "income",
+      "strike": 46.3,
+      "premium": 2.47,
+      "delta": 0.22,
+      "iv_rank": 64,
+      "iv_label": "IV Rank (est)",
+      "dte": 11,
+      "score": 76.7,
+      "score_class": "High",
+      "break_even": 43.83,
+      "distance_to_break_even_pct": -16.83,
+      "extrinsic_pct": 5.33,
+      "delta_efficiency": 11.2273,
+      "pct_from_52w_high": 5.23,
+      "capital_pct": 92.6,
+      "notional": 4630,
+      "tags": [
+        "TooLarge"
+      ],
+      "unrealized_pnl": -67.0,
+      "realized_pnl": 0.0,
+      "source": "Sim Fallback",
+      "initial_underlying": 46.3,
+      "underlying_mark": 45.63,
+      "initial_dte": 11,
+      "days_remaining": 10.989583333333325,
+      "current_option_mark": 3.14
+    },
+    {
+      "id": "b0837a7a",
+      "opened": "2025-07-19 14:43:04",
+      "symbol": "AMD",
+      "strategy_type": "growth",
+      "strike": 213.91,
+      "premium": 7.12,
+      "delta": 0.37,
+      "iv_rank": 61,
+      "iv_label": "IV Rank (est)",
+      "dte": 152,
+      "initial_dte": 152,
+      "score": 77,
+      "score_class": "High",
+      "break_even": 221.03,
+      "distance_to_break_even_pct": 13.66,
+      "extrinsic_pct": 3.66,
+      "delta_efficiency": 0,
+      "pct_from_52w_high": 18.48,
+      "capital_pct": 14.24,
+      "notional": 712,
+      "tags": [
+        "LargeSize"
+      ],
+      "source": "Sim Fallback",
+      "unrealized_pnl": 0.0,
+      "realized_pnl": 0.0,
+      "initial_underlying": 194.46,
+      "underlying_mark": 196.58,
+      "current_option_mark": 7.12,
+      "days_remaining": 151.98958333333348,
+      "closed": false
+    }
+  ],
+  "scan_history": [
+    {
+      "time": "14:21:23",
+      "income": 3,
+      "growth": 3,
+      "fallbacks": 11
+    },
+    {
+      "time": "14:43:04",
+      "income": 0,
+      "growth": 3,
+      "fallbacks": 11
+    },
+    {
+      "time": "14:56:13",
+      "income": 5,
+      "growth": 3,
+      "fallbacks": 11
+    }
+  ],
+  "settings": {
+    "watchlist": [
+      "AAPL",
+      "TSLA",
+      "MSFT",
+      "NVDA",
+      "SPY",
+      "AMD",
+      "META",
+      "GOOGL",
+      "NFLX",
+      "AMZN",
+      "QQQ"
+    ],
+    "beginner_mode": true,
+    "version": "phaseA_batch1_v1_patch1"
+  },
+  "iv_cache": {
+    "AAPL": [
+      0.5066403275399561,
+      0.47698830595290587,
+      0.3769170552832165
+    ],
+    "TSLA": [
+      0.4796987802274732,
+      0.5180204220708202,
+      0.36970676590971113
+    ],
+    "MSFT": [
+      0.48293612540873776,
+      0.3508326332228327,
+      0.25204698769865663
+    ],
+    "NVDA": [
+      0.40255232029726207,
+      0.2515172052491483,
+      0.4121196408667763
+    ],
+    "SPY": [
+      0.3962781029620882,
+      0.3312121948976677,
+      0.5283405212436203
+    ],
+    "AMD": [
+      0.30400630318904265,
+      0.4812874563338574,
+      0.3248130104582462
+    ],
+    "META": [
+      0.5391049097968688,
+      0.49527885731807586,
+      0.3610720925869982
+    ],
+    "GOOGL": [
+      0.47920739302391124,
+      0.40164707546363126,
+      0.40901052509636615
+    ],
+    "NFLX": [
+      0.5441485281921634,
+      0.2876420332348169,
+      0.5009994995960095
+    ],
+    "AMZN": [
+      0.2557917003334211,
+      0.3654033060022628,
+      0.46047844496842666
+    ],
+    "QQQ": [
+      0.37703359801047354,
+      0.4890738666927616,
+      0.46217332946278744
+    ]
+  }
+}

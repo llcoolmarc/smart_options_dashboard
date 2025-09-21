@@ -1,0 +1,46 @@
+{
+  "mode": "SIM",
+
+  "broker": {
+    "username": "your_tastytrade_email",
+    "password": "your_tastytrade_password",
+    "base_url": "https://api.cert.tastyworks.com",
+    "login_endpoint": "/sessions",
+    "positions_endpoint": "/accounts/positions",
+    "fills_endpoint": "/accounts/fills",
+    "ping_endpoint": "/time"
+  },
+
+  "account": {
+    "max_positions": 5,
+    "max_risk_per_trade": 500,
+    "max_risk_total": 2500
+  },
+
+  "target_expectancy": 1.0,
+  "discipline_threshold": 50,
+
+  "risk_limits": {
+    "max_symbol_allocation": 0.3,
+    "max_expiry_cluster": 5
+  },
+
+  "ladder": {
+    "contracts": [1, 2, 5, 10],
+    "step_up_condition": "positive_expectancy",
+    "enforce_live": true,
+    "warn_sim": true
+  },
+
+  "graduation": {
+    "min_trades": 25,
+    "clean_sessions": 15
+  },
+
+  "notifications": {
+    "email_alerts": false,
+    "slack_alerts": false
+  },
+
+  "refresh_rate": 10
+}

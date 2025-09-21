@@ -1,0 +1,26 @@
+{
+  "user_preferences": {
+    "default_ticker": "AAPL",
+    "last_params": {
+      "strike_offset": 10,
+      "expiration_days": 14,
+      "risk_level": "high"
+    }
+  },
+  "analytics_history": [
+    {
+      "trades": 50,
+      "winrate": 0.55,
+      "reward_risk": 1.5,
+      "risk_fraction": 0.02,
+      "final_balance": 16204.597753081873
+    },
+    {
+      "trades": 50,
+      "winrate": 0.55,
+      "reward_risk": 1.5,
+      "risk_fraction": 0.02,
+      "final_balance": 15417.96679419441
+    }
+  ]
+}

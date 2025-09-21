@@ -1,0 +1,22 @@
+{
+  "trades": [],
+  "scan_history": [],
+  "settings": {
+    "watchlist": [
+      "AAPL",
+      "TSLA",
+      "MSFT",
+      "NVDA",
+      "SPY",
+      "AMD",
+      "META",
+      "GOOGL",
+      "NFLX",
+      "AMZN",
+      "QQQ"
+    ],
+    "beginner_mode": true,
+    "version": "phaseA_v1"
+  },
+  "iv_cache": {}
+}

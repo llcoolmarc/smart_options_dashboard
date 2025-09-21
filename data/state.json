@@ -1,0 +1,225 @@
+{
+  "trades": [
+    {
+      "symbol": "TSLA",
+      "type": "short put",
+      "expiration": "2025-09-23",
+      "dte": 30,
+      "strike": 144.25,
+      "entry_credit": 2.96,
+      "ivr": 44,
+      "qty": 1,
+      "profit_pct": 0,
+      "target_pct": 50,
+      "near_earnings": false,
+      "coach": "Good candidate with IVR 44"
+    },
+    {
+      "symbol": "MSFT",
+      "type": "short put",
+      "expiration": "2025-08-31",
+      "dte": 7,
+      "strike": 247.05,
+      "entry_credit": 2.36,
+      "ivr": 50,
+      "qty": 1,
+      "profit_pct": 0,
+      "target_pct": 50,
+      "near_earnings": false,
+      "coach": "Good candidate with IVR 50"
+    },
+    {
+      "symbol": "TSLA",
+      "type": "short put",
+      "expiration": "2025-09-14",
+      "dte": 21,
+      "strike": 98.35,
+      "entry_credit": 0.87,
+      "ivr": 48,
+      "qty": 1,
+      "profit_pct": 0,
+      "target_pct": 50,
+      "near_earnings": false,
+      "coach": "Good candidate with IVR 48"
+    }
+  ],
+  "closed_trades": [],
+  "scan_history": [],
+  "performance": {},
+  "action_queue": [],
+  "sim_day": 0,
+  "tick_counter": 19,
+  "risk_cache": {},
+  "used_tips": [],
+  "eff_history": [],
+  "ivr_seen": {},
+  "auto_flags": {
+    "auto": false,
+    "partial50": false,
+    "lock5": false,
+    "ivr50": false,
+    "avoidEarnings": true
+  },
+  "tickets": [],
+  "settings": {
+    "watchlist": [
+      "AAPL",
+      "TSLA",
+      "MSFT",
+      "NVDA",
+      "SPY",
+      "QQQ"
+    ],
+    "min_ivr": 30,
+    "avoid_earnings": true,
+    "target_dte_low": 7,
+    "target_dte_high": 14,
+    "target_delta": 0.25,
+    "target_pct_default": 50,
+    "fee_per_contract": 1.35,
+    "portfolio_cap_pct": 50,
+    "cap_per_trade_pct": 10,
+    "max_loss_per_contract": 2500,
+    "account_size": 5000
+  },
+  "notes": {},
+  "logs": [
+    {
+      "time": "16:43:50",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "16:41:20",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "16:39:15",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    {
+      "time": "16:38:58",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    {
+      "time": "16:38:08",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "16:35:42",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "16:05:19",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "16:03:49",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:55:08",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:54:58",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:31:36",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:30:34",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:30:26",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "15:30:17",
+      "msg": "Suggested 6 CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "14:01:39",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:46:33",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:37:01",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:31:06",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:31:02",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    {
+      "time": "11:01:51",
+      "msg": "Updated watchlist.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:01:44",
+      "msg": "Suggested Covered Calls.",
+      "level": "INFO"
+    },
+    {
+      "time": "11:01:29",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "10:55:50",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "10:55:46",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    {
+      "time": "10:55:31",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    {
+      "time": "09:33:41",
+      "msg": "Suggested CSPs.",
+      "level": "INFO"
+    },
+    {
+      "time": "09:33:35",
+      "msg": "\u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f MSFT uses 1 contracts but risk rules allow only 0. | \u26a0\ufe0f TSLA uses 1 contracts but risk rules allow only 0.",
+      "level": "WARN"
+    },
+    "[09:21:05] Updated watchlist.",
+    "[09:20:59] Suggested CSPs."
+  ]
+}

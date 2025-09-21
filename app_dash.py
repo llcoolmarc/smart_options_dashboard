@@ -32,22 +32,25 @@ def get_enriched_session():
 
     # Journal & graduation
     trades = journal.load_all_trades(JOURNAL_PATH)
+    session["trades"] = trades
     grad = graduation.check_graduation()
     session["graduation"] = grad
 
     # Default broker info
     session["broker"] = {"status": "❌ Not connected", "accounts": [], "positions": []}
 
-    # Mode awareness
+    # Mode awareness + broker integration
     if grad.get("graduated"):
-        session["mode"] = "SANDBOX"
-        broker_sess = broker.BrokerSession(paper=True)
+        # Auto-flip SIM → SANDBOX
+        if session.get("mode") == "SIM":
+            session["mode"] = "SANDBOX"
+            da = session.setdefault("discipline_ai", {"messages": [], "score": 0})
+            da["messages"].append("🎓 Graduation achieved → Mode upgraded to SANDBOX.")
 
-        # ⚠️ Credentials should come from env or prefs.json in practice
-        USERNAME = prefs.get("broker_username", "")
-        PASSWORD = prefs.get("broker_password", "")
+        # ✅ FIX: use init_broker_session (safe wrapper)
+        broker_sess = broker.init_broker_session()
 
-        if broker_sess.login(USERNAME, PASSWORD):
+        if broker_sess and broker_sess.logged_in:
             accounts = broker_sess.get_accounts()
             positions = broker_sess.get_positions(accounts[0]["number"]) if accounts else []
             session["broker"] = {
@@ -56,7 +59,7 @@ def get_enriched_session():
                 "positions": positions,
             }
 
-            # Override account size for scaling
+            # Scaling enforcement message (only if accounts available)
             if accounts and accounts[0].get("buying-power") is not None:
                 bp = accounts[0]["buying-power"]
                 session["account_size"] = bp
@@ -65,7 +68,7 @@ def get_enriched_session():
                     f"⚖️ Scaling enforced against live broker buying power = ${bp:,.2f}"
                 )
         else:
-            session["broker"]["status"] = "❌ Broker login failed"
+            session["broker"] = {"status": "❌ Broker login failed"}
     else:
         session["mode"] = "SIM"
         session["broker"]["status"] = "🔒 Graduation lock — broker disabled"
@@ -86,7 +89,6 @@ def get_enriched_session():
 
     return session
 
-
 # ================================
 # Builders
 # ================================
@@ -102,13 +104,11 @@ def build_expectancy(session):
         html.P(f"Win Rate: {win_rate:.1f}%")
     ])
 
-
 def build_discipline(session):
     violations = session.get("discipline", {}).get("violations", [])
     if not violations:
         return html.Div("✅ No discipline violations")
     return html.Ul([html.Li(v) for v in violations])
-
 
 def build_discipline_ai(session):
     da = session.get("discipline_ai", {})
@@ -120,14 +120,14 @@ def build_discipline_ai(session):
         html.Ul(items)
     ])
 
-
 def build_broker(session):
     broker_info = session.get("broker", {})
     status = broker_info.get("status", "❌ Broker unavailable")
     accounts = broker_info.get("accounts", [])
     positions = broker_info.get("positions", [])
 
-    elements = [html.P(f"Status: {status}", className="fw-bold")]
+    elements = [html.P(f"Mode: {session.get('mode', 'SIM')}", className="fw-bold")]
+    elements.append(html.P(f"Status: {status}", className="fw-bold"))
 
     if accounts:
         elements.append(html.H6("Accounts:", className="mt-2"))
@@ -153,96 +153,53 @@ def build_broker(session):
 
     return html.Div(elements)
 
+def build_graduation(session):
+    grad = session.get("graduation", {})
+    msg = grad.get("message", "No graduation status available.")
+    mode = session.get("mode", "SIM")
 
-# Coaching, Scaling, Filters, Profits, Trade Instructions, Best Strategy, Events, Alerts
-# (same builders we added earlier, unchanged except scaling uses account_size override)
+    items = [html.P(f"Mode: {mode}", className="fw-bold")]
+
+    if grad.get("graduated"):
+        sandbox_ready = graduation.check_sandbox_ready(session)
+        if sandbox_ready["ready"]:
+            items.append(html.P("🎓 Graduation + SANDBOX passed → LIVE unlock available."))
+        else:
+            items.append(html.P(f"🚧 LIVE locked → {sandbox_ready['reason']}"))
+    else:
+        items.append(html.P("🚧 Graduation not yet passed."))
+
+    items.append(html.P(msg))
+    return html.Div(items)
 
 def build_coaching(session):
-    market = session.get("marketdata", {})
-    portfolio_data = session.get("portfolio", {})
-    prefs = session.get("preferences", {})
-    try:
-        coaching_msgs = coaching_engine.live_coaching(market, portfolio_data, prefs)
-    except Exception:
-        coaching_msgs = []
-    if not coaching_msgs:
-        return html.Div("No coaching guidance available yet.")
-    return html.Ul([html.Li(m) for m in coaching_msgs])
-
+    return html.Div([html.P(m) for m in coaching_engine.generate(session).get("messages", [])])
 
 def build_scaling(session):
-    portfolio_data = session.get("portfolio", {})
-    prefs = session.get("preferences", {})
-    account_size = prefs.get("account_size", 10000)
-    if session.get("account_size"):
-        account_size = session["account_size"]
-    try:
-        result = scaling.check_scaling(portfolio_data, account_size)
-    except Exception:
-        result = {"messages": ["⚠️ Scaling check unavailable."], "compliant": True}
-    return html.Div([html.Ul([html.Li(m) for m in result.get("messages", [])])])
-
+    return html.Div([html.P(m) for m in scaling.check_allocation(session).get("messages", [])])
 
 def build_filters(session):
-    try:
-        result = filters.check_filters({}, [], None)
-    except Exception:
-        result = {"messages": ["⚠️ Filters unavailable"], "compliant": True}
-    da = session.setdefault("discipline_ai", {"messages": [], "score": 0})
-    if not result.get("compliant"):
-        da["messages"].append("🚫 Trade blocked due to market filter (earnings/VIX).")
-    return html.Div([html.Ul([html.Li(m) for m in result.get("messages", [])])])
-
+    return html.Div([html.P(m) for m in filters.check_market_conditions(session).get("messages", [])])
 
 def build_profits(session):
-    prefs = session.get("preferences", {})
-    try:
-        entries = journal.load_journal(JOURNAL_PATH)
-        result = profits.calculate_profits(entries, prefs)
-    except Exception:
-        result = {"messages": ["⚠️ Profit calc unavailable"], "realized": 0}
-    return html.Div([
-        html.P(f"Realized profit this month: ${result.get('realized', 0):.2f}"),
-        html.Ul([html.Li(m) for m in result.get("messages", [])])
-    ])
-
+    return html.Div([html.P(m) for m in profits.evaluate_distribution(session).get("messages", [])])
 
 def build_trade_instructions(session):
-    instructions = session.get("instructions", [])
-    violations = session.get("discipline", {}).get("violations", [])
-    extra = []
-    if "Scaling violation" in " ".join(violations):
-        extra.append("Reject trades above allowed contract ladder.")
-    return html.Div([
-        html.P("Trade Instructions:", className="fw-bold"),
-        html.Ul([html.Li(instr) for instr in instructions + extra])
-    ])
-
+    return html.Div([html.P(m) for m in coaching_engine.trade_instructions(session).get("messages", [])])
 
 def build_best_strategy(session):
-    instructions = session.get("instructions", [])
-    spreads = [i for i in instructions if "spread" in i.lower()]
-    if not spreads:
-        return html.Div("⚠️ No validated spread strategy.")
-    return html.Ul([html.Li(s) for s in spreads])
-
+    return html.Div([html.P(m) for m in coaching_engine.best_strategy(session).get("messages", [])])
 
 def build_events(session):
-    return html.Div("No events scheduled.")
-
+    return html.Div([html.P(m) for m in filters.check_events(session).get("messages", [])])
 
 def build_alerts(session):
-    violations = session.get("discipline", {}).get("violations", [])
-    if not violations:
-        return html.Div("✅ No alerts.")
-    return html.Ul([html.Li(v) for v in violations])
-
+    return html.Div([html.P(m) for m in discipline_ai.check_alerts(session).get("messages", [])])
 
 # ================================
 # Layout
 # ================================
 app = dash.Dash(__name__, external_stylesheets=[dbc.themes.BOOTSTRAP])
-
 
 def serve_layout():
     session = get_enriched_session()
@@ -251,7 +208,6 @@ def serve_layout():
 
         dbc.Button("⬇️ Export Compliance CSV", color="secondary", className="mb-4"),
 
-        # Broker Card at top
         dbc.Row([
             dbc.Col(dbc.Card([
                 dbc.CardHeader("📡 Broker Connection"),
@@ -262,7 +218,7 @@ def serve_layout():
         dbc.Row([
             dbc.Col(dbc.Card([
                 dbc.CardHeader("🎓 Graduation Status"),
-                dbc.CardBody(html.Div(session["graduation"]["message"]))
+                dbc.CardBody(build_graduation(session))
             ]), width=12)
         ], className="mb-4"),
 
@@ -275,21 +231,21 @@ def serve_layout():
 
         dbc.Row([
             dbc.Col(dbc.Card([
-                dbc.CardHeader("🧑‍🏫 Coaching"),
+                dbc.CardHeader("🎯 Coaching"),
                 dbc.CardBody(build_coaching(session))
             ]), width=12)
         ], className="mb-4"),
 
         dbc.Row([
             dbc.Col(dbc.Card([
-                dbc.CardHeader("📏 Scaling"),
+                dbc.CardHeader("📊 Scaling"),
                 dbc.CardBody(build_scaling(session))
             ]), width=12)
         ], className="mb-4"),
 
         dbc.Row([
             dbc.Col(dbc.Card([
-                dbc.CardHeader("🚦 Filters"),
+                dbc.CardHeader("⛔ Filters"),
                 dbc.CardBody(build_filters(session))
             ]), width=12)
         ], className="mb-4"),
@@ -303,21 +259,7 @@ def serve_layout():
 
         dbc.Row([
             dbc.Col(dbc.Card([
-                dbc.CardHeader("⚖️ Discipline"),
-                dbc.CardBody(build_discipline(session))
-            ]), width=12)
-        ], className="mb-4"),
-
-        dbc.Row([
-            dbc.Col(dbc.Card([
-                dbc.CardHeader("🤖 Discipline AI"),
-                dbc.CardBody(build_discipline_ai(session))
-            ]), width=12)
-        ], className="mb-4"),
-
-        dbc.Row([
-            dbc.Col(dbc.Card([
-                dbc.CardHeader("📋 Trade Instructions"),
+                dbc.CardHeader("📝 Trade Instructions"),
                 dbc.CardBody(build_trade_instructions(session))
             ]), width=12)
         ], className="mb-4"),
@@ -338,12 +280,25 @@ def serve_layout():
 
         dbc.Row([
             dbc.Col(dbc.Card([
-                dbc.CardHeader("🚨 Alerts"),
+                dbc.CardHeader("⚠️ Alerts"),
                 dbc.CardBody(build_alerts(session))
             ]), width=12)
         ], className="mb-4"),
-    ], fluid=True)
 
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("🛡️ Discipline"),
+                dbc.CardBody(build_discipline(session))
+            ]), width=12)
+        ], className="mb-4"),
+
+        dbc.Row([
+            dbc.Col(dbc.Card([
+                dbc.CardHeader("🤖 Continuous Discipline AI"),
+                dbc.CardBody(build_discipline_ai(session))
+            ]), width=12)
+        ], className="mb-4"),
+    ], fluid=True)
 
 app.layout = serve_layout
 

@@ -1,0 +1,91 @@
+{
+  "trades": [
+    {
+      "id": "8e12e855",
+      "opened": "2025-07-19 14:21:23",
+      "symbol": "SPY",
+      "strategy_type": "income",
+      "strike": 46.3,
+      "premium": 2.47,
+      "delta": 0.22,
+      "iv_rank": 64,
+      "iv_label": "IV Rank (est)",
+      "dte": 11,
+      "score": 76.7,
+      "score_class": "High",
+      "break_even": 43.83,
+      "distance_to_break_even_pct": -16.83,
+      "extrinsic_pct": 5.33,
+      "delta_efficiency": 11.2273,
+      "pct_from_52w_high": 5.23,
+      "capital_pct": 92.6,
+      "notional": 4630,
+      "tags": [
+        "TooLarge"
+      ],
+      "unrealized_pnl": 0.0,
+      "realized_pnl": 0.0,
+      "source": "Sim Fallback"
+    }
+  ],
+  "scan_history": [
+    {
+      "time": "14:21:23",
+      "income": 3,
+      "growth": 3,
+      "fallbacks": 11
+    }
+  ],
+  "settings": {
+    "watchlist": [
+      "AAPL",
+      "TSLA",
+      "MSFT",
+      "NVDA",
+      "SPY",
+      "AMD",
+      "META",
+      "GOOGL",
+      "NFLX",
+      "AMZN",
+      "QQQ"
+    ],
+    "beginner_mode": true,
+    "version": "phaseA_hotfix_6a"
+  },
+  "iv_cache": {
+    "AAPL": [
+      0.5066403275399561
+    ],
+    "TSLA": [
+      0.4796987802274732
+    ],
+    "MSFT": [
+      0.48293612540873776
+    ],
+    "NVDA": [
+      0.40255232029726207
+    ],
+    "SPY": [
+      0.3962781029620882
+    ],
+    "AMD": [
+      0.30400630318904265
+    ],
+    "META": [
+      0.5391049097968688
+    ],
+    "GOOGL": [
+      0.47920739302391124
+    ],
+    "NFLX": [
+      0.5441485281921634
+    ],
+    "AMZN": [
+      0.2557917003334211
+    ],
+    "QQQ": [
+      0.37703359801047354
+    ]
+  }
+}

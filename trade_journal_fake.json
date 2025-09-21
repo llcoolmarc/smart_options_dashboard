@@ -1,0 +1,36 @@
+[
+  {
+    "mode": "LIVE",
+    "timestamp": "2025-09-12T20:00:00Z",
+    "symbol": "AAPL",
+    "strategy": "Cash-Secured Put",
+    "contracts": 1,
+    "strike": 175,
+    "premium": 2.35,
+    "status": "OPEN",
+    "source": "broker"
+  },
+  {
+    "mode": "LIVE",
+    "timestamp": "2025-09-12T20:05:00Z",
+    "symbol": "MSFT",
+    "strategy": "Covered Call",
+    "contracts": 1,
+    "strike": 340,
+    "premium": 1.25,
+    "status": "OPEN",
+    "source": "broker"
+  },
+  {
+    "mode": "LIVE",
+    "timestamp": "2025-09-12T20:05:00Z",
+    "symbol": "MSFT",
+    "strategy": "Covered Call",
+    "contracts": 1,
+    "strike": 340,
+    "premium": 1.25,
+    "status": "CLOSED",
+    "source": "broker",
+    "closed_reason": "drift"
+  }
+]
