@@ -48,6 +48,7 @@ class AnalyticsEngine:
     def _calculate_expectancy(self, trades: List[Dict[str, Any]]) -> Dict[str, Any]:
         """
         Weighted expectancy calculation (recent trades count more).
+        Suitable for dashboard analytics, not strict graduation gating.
         """
         if not trades:
             return {"expectancy": 0, "win_rate": 0}
@@ -104,18 +105,18 @@ class AnalyticsEngine:
 def calculate_expectancy(trades: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
     Calculate expectancy and win rate for graduation.py and external modules.
+
+    Strict version for graduation:
+      - Expectancy = mean(PnL of all trades).
+      - Win rate = (# winning trades) / total.
     """
     if not trades:
         return {"expectancy": 0, "win_rate": 0}
 
-    wins = [t["pnl"] for t in trades if t.get("pnl", 0) > 0]
-    losses = [abs(t["pnl"]) for t in trades if t.get("pnl", 0) < 0]
-    total = len(trades)
-    win_rate = (len(wins) / total) * 100 if total > 0 else 0
+    pnl_values = [t.get("pnl", 0) for t in trades]
+    total = len(pnl_values)
 
-    avg_win = statistics.mean(wins) if wins else 0
-    avg_loss = statistics.mean(losses) if losses else 0
-
-    expectancy = (avg_win * (win_rate / 100)) - (avg_loss * ((100 - win_rate) / 100))
+    win_rate = (sum(1 for p in pnl_values if p > 0) / total) * 100 if total > 0 else 0
+    expectancy = sum(pnl_values) / total  # strict: raw average
 
     return {"expectancy": expectancy, "win_rate": win_rate}

@@ -1,66 +1,70 @@
 # -*- coding: utf-8 -*-
-import sys, os, io, json
-# Force UTF-8 output
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-# Ensure repo root in path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import os
 from utils import journal
-from app_dash import get_enriched_session
 
-TEST_PATH = os.path.join(os.path.dirname(__file__), "trade_journal_test.json")
-TEST_RESULTS = {"pass": 0, "fail": 0}
-
-def reset_test_file(entries):
-    with open(TEST_PATH, "w", encoding="utf-8") as f:
-        json.dump(entries, f, indent=2)
-
-def record_result(cond, desc):
-    if cond: print(f"[✅ PASS] {desc}"); TEST_RESULTS["pass"] += 1
-    else: print(f"[❌ FAIL] {desc}"); TEST_RESULTS["fail"] += 1
-
-def print_summary(name, results):
-    print(f"\n=== {name} Summary ===")
-    print(f"✅ Passed: {results['pass']}")
-    print(f"❌ Failed: {results['fail']}")
-    if results["fail"] == 0:
-        print("🎉 All tests passed successfully!")
-    else:
-        print("⚠️ Some tests failed — review output above.")
 
 def main():
-    # Keep your detailed journal parsing checks
-    reset_test_file([])
-    record_result(isinstance(journal.load_all_trades(TEST_PATH), list), "Empty journal handled")
+    print("=== Journal Smoke Tests ===")
 
-    flat_trades = [
-        {"symbol": "SPY", "pnl": 50, "type": "vertical"},
-        {"symbol": "QQQ", "pnl": -20, "type": "iron_condor"},
-    ]
-    reset_test_file(flat_trades)
-    record_result(len(journal.load_all_trades(TEST_PATH)) == 2, "Flat trades parsed")
+    test_file = "tests/trade_journal_test.json"
 
-    nested_sessions = [
-        {"timestamp": "2025-09-20T09:30:00", "mode": "SIM", "clean": True,
-         "trades": [{"symbol": "SPY", "pnl": 100}, {"symbol": "QQQ", "pnl": -50}]}
-    ]
-    reset_test_file(nested_sessions)
-    record_result(len(journal.load_all_trades(TEST_PATH)) == 2, "Nested trades parsed")
+    # Always reset test file to an empty list
+    with open(test_file, "w", encoding="utf-8") as f:
+        f.write("[]")
 
-    # Enriched session validation
-    session = get_enriched_session()
-    record_result(session.get("mode") in ["SIM","SANDBOX","LIVE"], "Mode valid")
-    record_result("expectancy" in session, "Expectancy present")
+    # ---- Empty Journal ----
+    trades = journal.load_all_trades(test_file)
+    if isinstance(trades, list) and len(trades) == 0:
+        print("[PASS] Empty journal handled")
+    else:
+        print("[FAIL] Empty journal handled")
 
-    dai = session.get("discipline_ai", {})
-    record_result("score" in dai, "Discipline AI score present")
-    if "messages" in dai and dai["messages"]:
-        print("[INFO] Discipline AI messages:")
-        for m in dai["messages"]: print("  -", m)
+    # ---- Flat trades ----
+    flat = [{"symbol": "AAPL", "pnl": 50}]
+    journal.save_trades(test_file, flat)
+    trades = journal.load_all_trades(test_file)
+    if len(trades) == 1 and trades[0]["symbol"] == "AAPL":
+        print("[PASS] Flat trades parsed")
+    else:
+        print("[FAIL] Flat trades parsed")
 
-    record_result("broker" in session, "Broker info included in session")
+    # ---- Nested trades ----
+    nested = [{"trades": [{"symbol": "MSFT", "pnl": -20}, {"symbol": "TSLA", "pnl": 100}]}]
+    journal.save_trades(test_file, nested)
+    trades = journal.load_all_trades(test_file)
+    if len(trades) == 2 and any(t["symbol"] == "TSLA" for t in trades):
+        print("[PASS] Nested trades parsed")
+    else:
+        print("[FAIL] Nested trades parsed")
 
-    print_summary("Journal Test Harness", TEST_RESULTS)
+    # ---- Enrichment ----
+    root_file = "trade_journal.json"
+    if not os.path.exists(root_file):
+        with open(root_file, "w", encoding="utf-8") as f:
+            f.write("[]")
+
+    trades = journal.load_all_trades(root_file)
+    enriched = journal.enrich_session(trades)
+    if enriched.get("mode") in ("SANDBOX", "LIVE", "SIM"):
+        print("[PASS] Mode valid")
+    else:
+        print("[FAIL] Mode valid")
+
+    if "expectancy" in enriched:
+        print("[PASS] Expectancy present")
+    else:
+        print("[FAIL] Expectancy present")
+
+    if "discipline_ai" in enriched and "score" in enriched["discipline_ai"]:
+        print("[PASS] Discipline AI score present")
+    else:
+        print("[FAIL] Discipline AI score present")
+
+    if "broker" in enriched:
+        print("[PASS] Broker info included in session")
+    else:
+        print("[FAIL] Broker info included in session")
+
 
 if __name__ == "__main__":
     main()

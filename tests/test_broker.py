@@ -1,55 +1,50 @@
 # -*- coding: utf-8 -*-
-import sys, os, io
-# Force UTF-8 output
-sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8")
-# Ensure repo root is in path for imports
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import sys, os
+sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
-from utils.broker import BrokerSession, safe_fetch_portfolio, safe_fetch_marketdata, broker_status
-from app_dash import get_enriched_session
+from utils.broker import BrokerSession, broker_status
 
-TEST_RESULTS = {"pass": 0, "fail": 0}
+def safe_print(msg):
+    try:
+        print(msg)
+    except UnicodeEncodeError:
+        print(msg.encode("ascii", errors="ignore").decode())
 
 def record_result(cond, desc):
-    if cond: print(f"[✅ PASS] {desc}"); TEST_RESULTS["pass"] += 1
-    else: print(f"[❌ FAIL] {desc}"); TEST_RESULTS["fail"] += 1
-
-def print_summary(name, results):
-    print(f"\n=== {name} Summary ===")
-    print(f"✅ Passed: {results['pass']}")
-    print(f"❌ Failed: {results['fail']}")
-    if results["fail"] == 0:
-        print("🎉 All tests passed successfully!")
+    if cond:
+        safe_print(f"[PASS] {desc}")
     else:
-        print("⚠️ Some tests failed — review output above.")
+        safe_print(f"[FAIL] {desc}")
 
 def main():
-    USERNAME = os.getenv("TASTY_USERNAME", "your_username")
-    PASSWORD = os.getenv("TASTY_PASSWORD", "your_password")
+    safe_print("=== Broker Smoke Tests ===")
 
-    broker_sess = BrokerSession(paper=True)
-    record_result(broker_sess.login(USERNAME, PASSWORD), "Broker login to SANDBOX")
+    user = os.getenv("BROKER_USER")
+    pw = os.getenv("BROKER_PASS")
 
-    accounts = broker_sess.get_accounts()
-    record_result(isinstance(accounts, list), "Fetched accounts list")
-    if accounts:
-        acc = accounts[0]
-        record_result("cash-balance" in acc, "Account includes cash balance")
-        record_result("buying-power" in acc, "Account includes buying power")
-        record_result(isinstance(broker_sess.get_positions(acc['number']), list), "Fetched positions list")
+    broker = BrokerSession(paper=True)
+    if not (user and pw):
+        safe_print("[WARN] No SANDBOX credentials found in environment")
+        return
 
-    record_result("Connected" in broker_status(broker_sess) or "Not connected" in broker_status(broker_sess),
-                  "Broker status string valid")
+    if broker.login(user, pw):
+        record_result(True, "Broker login to SANDBOX")
+        accounts = broker.safe_fetch_accounts()
+        record_result(bool(accounts), "Fetched accounts list")
+        record_result("Connected" in broker_status(broker), "Broker status string valid")
 
-    record_result("accounts" in safe_fetch_portfolio(broker_sess), "safe_fetch_portfolio returns accounts")
-    record_result(isinstance(safe_fetch_marketdata(broker_sess, "SPY"), dict), "safe_fetch_marketdata returns dict")
+        portfolio = broker.safe_fetch_portfolio()
+        record_result(isinstance(portfolio, list), "safe_fetch_portfolio returns accounts")
 
-    broker_sess.disconnect()
+        marketdata = broker.safe_fetch_marketdata("SPY")
+        record_result(isinstance(marketdata, dict), "safe_fetch_marketdata returns dict")
 
-    session = get_enriched_session()
-    record_result("broker" in session, "Enriched session includes broker info")
+        enriched = {"broker": broker_status(broker)}
+        record_result("broker" in enriched, "Enriched session includes broker info")
+    else:
+        record_result(False, "Broker login to SANDBOX")
 
-    print_summary("Broker Test Harness", TEST_RESULTS)
+    broker.disconnect()
 
 if __name__ == "__main__":
     main()

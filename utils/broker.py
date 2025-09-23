@@ -1,11 +1,12 @@
 """
 utils/broker.py
 
-Tastytrade Broker Integration (Phase 19+20)
+Tastytrade Broker Integration (Phase 19+21)
 Supports SIM | SANDBOX | LIVE modes.
 Default: SANDBOX (cert environment).
 """
 
+import os
 import requests
 import logging
 from utils import preferences
@@ -14,19 +15,51 @@ logging.basicConfig(level=logging.DEBUG, format="[BROKER] %(message)s")
 
 
 class BrokerSession:
-    def __init__(self, base_url: str, paper: bool = True):
-        self.base_url = base_url
+    def __init__(self, paper: bool = True, base_url: str = None):
+        """
+        paper=True → sandbox mode
+        paper=False → live mode
+        base_url (optional) will override defaults
+        """
+        self.paper = paper
+
+        # Resolve base_url if not provided
+        if base_url is None:
+            if paper:
+                base_url = os.getenv("TASTY_BASE_URL_SANDBOX")
+            else:
+                base_url = os.getenv("TASTY_BASE_URL_LIVE")
+
+            # Fallback to preferences.json
+            if not base_url:
+                prefs = preferences.load_preferences().get("broker", {})
+                key = "sandbox_url" if paper else "live_url"
+                base_url = prefs.get(key)
+
+        # Final fallback → hardcoded cert sandbox
+        if not base_url:
+            base_url = "https://api.cert.tastyworks.com"
+
+        self.base_url = base_url.rstrip("/")
         self.session = requests.Session()
         self.session_token = None
         self.logged_in = False
-        self.paper = paper
         self.accounts = []
 
-    def login(self, username: str, password: str) -> bool:
+    def login(self, username: str = None, password: str = None) -> bool:
         """
         Login to Tastytrade (sandbox or live).
-        Returns True if successful.
+        Credentials pulled from env if not passed explicitly.
         """
+        if not username:
+            username = os.getenv("TASTY_USERNAME")
+        if not password:
+            password = os.getenv("TASTY_PASSWORD")
+
+        if not username or not password:
+            logging.error("❌ Missing broker credentials")
+            return False
+
         try:
             url = f"{self.base_url}/sessions"
             payload = {"login": username, "password": password}
@@ -47,9 +80,6 @@ class BrokerSession:
             return False
 
     def get_accounts(self):
-        """
-        Fetch account list + balances.
-        """
         if not self.logged_in:
             logging.error("❌ Not logged in")
             return []
@@ -67,7 +97,7 @@ class BrokerSession:
                         "number": acct_num,
                         "cash-balance": balances.get("cash-balance"),
                         "margin-balance": balances.get("margin-balance"),
-                        "buying-power": balances.get("margin-usable-trading-balance")
+                        "buying-power": balances.get("margin-usable-trading-balance"),
                     })
                 logging.info("✅ Accounts: %s", [a["number"] for a in self.accounts])
                 return self.accounts
@@ -79,13 +109,9 @@ class BrokerSession:
             return []
 
     def get_positions(self, account: str):
-        """
-        Fetch open positions for an account.
-        """
         if not self.logged_in:
             logging.error("❌ Not logged in")
             return []
-
         try:
             url = f"{self.base_url}/accounts/{account}/positions"
             resp = self.session.get(url, timeout=10)
@@ -101,14 +127,9 @@ class BrokerSession:
             return []
 
     def place_order(self, account: str, order: dict):
-        """
-        Place a defined-risk spread order.
-        Order dict must follow Tastytrade schema.
-        """
         if not self.logged_in:
             logging.error("❌ Not logged in")
             return None
-
         try:
             url = f"{self.base_url}/accounts/{account}/orders"
             resp = self.session.post(url, json={"data": order}, timeout=10)
@@ -123,9 +144,6 @@ class BrokerSession:
             return None
 
     def disconnect(self):
-        """
-        Disconnect session.
-        """
         self.session.close()
         self.logged_in = False
         self.session_token = None
@@ -135,18 +153,14 @@ class BrokerSession:
 # === Safe Wrappers (Cockpit compliance) ===
 
 def init_broker_session() -> BrokerSession:
-    """
-    Initialize broker session using preferences + .env.
-    """
     prefs = preferences.load_preferences()
     broker_cfg = prefs.get("broker", {})
-    base_url = broker_cfg.get("base_url", "https://api.cert.tastyworks.com")
-    paper = "cert" in base_url  # sandbox if cert endpoint
+    base_url = broker_cfg.get("base_url")
+    paper = "cert" in (base_url or "").lower()  # sandbox if cert endpoint
 
-    session = BrokerSession(base_url=base_url, paper=paper)
-    if session.login(broker_cfg.get("username"), broker_cfg.get("password")):
-        return session
-    return session  # returns session, even if not logged in (cockpit handles it)
+    session = BrokerSession(paper=paper, base_url=base_url)
+    session.login(broker_cfg.get("username"), broker_cfg.get("password"))
+    return session
 
 
 def safe_fetch_portfolio(session: BrokerSession):
@@ -176,10 +190,6 @@ def safe_fetch_marketdata(session: BrokerSession, symbol: str = "SPY"):
 
 
 def broker_status(session: BrokerSession = None) -> str:
-    """
-    Return human-readable broker connection status.
-    Used by graduation and cockpit UI.
-    """
     if session is None:
         return "❌ No broker session"
     if not session.logged_in:

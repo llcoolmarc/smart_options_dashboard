@@ -27,9 +27,13 @@ def check_scaling(portfolio: dict, account_size: float = 10000, max_trades: int 
     # Per-trade and total risk checks
     # ---------------------------
     for pos in positions:
+        if not isinstance(pos, dict):
+            # Skip malformed entries gracefully
+            continue
+
         sym = pos.get("symbol", "Unknown")
-        strat = pos.get("strategy", "").lower()
-        risk = pos.get("max_loss", 0)  # defined-risk per trade
+        strat = str(pos.get("strategy", "")).lower()
+        risk = float(pos.get("max_loss", 0))  # defined-risk per trade
         total_risk += risk
         symbol_exposure[sym] = symbol_exposure.get(sym, 0) + risk
 
@@ -76,7 +80,7 @@ def check_scaling(portfolio: dict, account_size: float = 10000, max_trades: int 
     # ---------------------------
     # Max number of trades
     # ---------------------------
-    open_trades = len(positions)
+    open_trades = sum(1 for p in positions if isinstance(p, dict))
     if open_trades > max_trades:
         compliant = False
         messages.append(
@@ -116,10 +120,21 @@ def check_scaling(portfolio: dict, account_size: float = 10000, max_trades: int 
         messages.append("✅ Portfolio scaling is within safe limits.")
 
     return {"compliant": compliant, "messages": messages}
+
+
 def check_allocation(session: dict) -> dict:
     """
     Alias wrapper so app_dash.py can call scaling.check_allocation(session).
     """
-    portfolio = {"positions": session.get("trades", [])}
+    trades = session.get("trades", [])
+    # Flatten in case of nested lists
+    flat_positions = []
+    for t in trades:
+        if isinstance(t, list):
+            flat_positions.extend(t)
+        else:
+            flat_positions.append(t)
+
+    portfolio = {"positions": flat_positions}
     account_size = session.get("account_size", 10000)
     return check_scaling(portfolio, account_size=account_size)
