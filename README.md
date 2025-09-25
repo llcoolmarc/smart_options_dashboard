@@ -40,3 +40,29 @@ Built for options traders who demand accountability and repeatability.
 ```bash
 git clone https://github.com/YOUR_USERNAME/smart_options_dashboard.git
 cd smart_options_dashboard
+---
+
+## 🚀 Going LIVE
+
+The cockpit enforces strict gates before allowing `USE_LIVE=true`.  
+See [GOING_LIVE_CHECKLIST.md](GOING_LIVE_CHECKLIST.md) for the full pre-flight.
+
+### Environment Keys
+Define in `.env` (never commit this file):
+
+```env
+# Mode & safety
+USE_LIVE=false
+ALWAYS_DRY_RUN=true
+
+# Sandbox creds (preferred for tests)
+TT_SANDBOX_USER=your_sandbox_username
+TT_SANDBOX_PASS=your_sandbox_password
+
+# Live creds (enable only after graduation)
+TT_LIVE_USER=your_live_username
+TT_LIVE_PASS=your_live_password
+
+# API endpoints (defaults exist; override only if needed)
+TASTY_BASE_URL_SANDBOX=https://api.cert.tastytrade.com
+TASTY_BASE_URL_LIVE=https://api.tastytrade.com
