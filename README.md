@@ -66,3 +66,18 @@ TT_LIVE_PASS=your_live_password
 # API endpoints (defaults exist; override only if needed)
 TASTY_BASE_URL_SANDBOX=https://api.cert.tastytrade.com
 TASTY_BASE_URL_LIVE=https://api.tastytrade.com
+
+## Creative Content Engine Scaffold
+
+This repo now includes a content-generation scaffold for Claude Code:
+
+- `CLAUDE.md`: orchestration instructions and guardrails.
+- `tools/`: Python connectors for Airtable, Kie uploads, image generation, and video generation.
+- `references/inputs/`: drop product reference files here.
+- `.claude/.env.example`: required API variables.
+
+Quick check:
+
+```bash
+python -c "import sys; sys.path.insert(0, '.'); from tools.config import load_env; load_env(); print('creative tools ready')"
+```

@@ -69,3 +69,8 @@ dist/
 # =============================
 tests/trade_journal_test.json
 tests/trade_journal_sandbox_test.json
+
+# Creative engine secrets
+.claude/.env
+
+!.claude/.env.example
